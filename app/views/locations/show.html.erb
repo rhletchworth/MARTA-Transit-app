@@ -1,0 +1,95 @@
+<p id="notice"><%= notice %></p>
+
+<h2>Your Current Location...</h2>
+<p>
+  <%= @location.my_location %>
+</p>
+
+<center><h2>The Closest Buses Are...</h2></center>
+
+<% if @bus_count == 0 %>
+
+<center><p>... well, not that close. Best start walking.</p></center>
+
+<% else %>
+
+<% @nearby_buses.each_with_index do |bus, index| %>
+
+<script>
+
+$(document).ready(function (){
+    function initialize(){
+   
+     var busCoords = new google.maps.LatLng(<%= bus["LATITUDE"] %>, <%= bus["LONGITUDE"] %>);
+
+      // This is the text for our bus
+      var contentStringBus = "Route: <%= bus["ROUTE"] %> | Bus #: <%= bus["VEHICLE"] %> | Next Stop: <%= bus["TIMEPOINT"] %>";
+
+      // This is the text for our user
+      var contentStringUser = "You are here!";
+
+
+      // This is the marker that shows where the bus is
+      var image = { url: 'https://cdn.iconscout.com/public/images/icon/premium/png-128/bus-station-object-map-pointer-37a4b92ba4fa4a29-128x128.png', 
+      scaledSize: new google.maps.Size(25, 25)
+  	}
+
+      var busMarker = new google.maps.Marker({
+        position: busCoords,
+        map: map,
+        icon: image,
+	animation: google.maps.Animation.DROP
+      });
+
+      // This is the marker for our users position
+      var userMarker = new google.maps.Marker({
+        position: userCoords,
+    	map: map,
+	animation: google.maps.Animation.DROP
+      });
+
+     // Info window and event listener for the bus
+      var infoWindowBus = new google.maps.InfoWindow({
+        content: contentStringBus
+      });
+
+      google.maps.event.addListener(busMarker, 'click', function() {
+        infoWindowBus.open(map, busMarker);
+      });
+
+       // Info window and event listener for the user
+      var infoWindowUser = new google.maps.InfoWindow({
+        content: contentStringUser
+      });
+
+      google.maps.event.addListener(userMarker, 'click', function() {
+        infoWindowUser.open(map, userMarker);
+      });
+
+    }
+  
+  google.maps.event.addDomListener(window, 'load', initialize);
+  });
+		
+</script>
+
+<% end %>
+
+<center><div class="bus-map" id="map-canvas"></div></center>
+
+<script>      
+	var userCoords = new google.maps.LatLng(<%= @location.latitude %>, <%= @location.longitude %>);
+
+	var mapOptions = {
+	center: userCoords,
+	zoom: 13,
+	scrollwheel: false
+      };
+
+	var map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+</script>
+  
+
+<% end %>
+
+<%= link_to "Actually, I'm at...", edit_location_path(@location) %>
